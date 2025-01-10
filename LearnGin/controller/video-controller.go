@@ -31,3 +31,5 @@ func (c *controller) Save(ctx *gin.Context) entity.Video {
 	c.service.Save(video)
 	return video
 }
+
+

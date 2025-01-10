@@ -2,6 +2,7 @@ package main
 
 import (
 	"learning/gingo/controller"
+	"learning/gingo/middlewares"
 	"learning/gingo/service"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +14,9 @@ var (
 )
 
 func main() {
-	server := gin.Default()
+	server := gin.New()
+
+	server.Use(gin.Recovery(), middlewares.Logger())
 
 	server.GET("/videos", func(ctx *gin.Context) {
 		ctx.JSON(200, VideoController.FindAll())

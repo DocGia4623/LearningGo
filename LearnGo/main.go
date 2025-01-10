@@ -37,3 +37,5 @@ func say(s string, ch chan string) {
 		ch <- fmt.Sprintf("%s %d", s, i+1)
 	}
 }
+
+
