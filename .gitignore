@@ -73,3 +73,5 @@ _testmain.go
 
 # environment file
 .env
+#log file
+*.log
