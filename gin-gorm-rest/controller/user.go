@@ -30,3 +30,9 @@ func UpdateUser(c *gin.Context) {
 	config.DB.Save(&user)
 	c.JSON(200, &user)
 }
+
+func GetUser(c *gin.Context) {
+	var user models.User
+	config.DB.Where("id = ?", c.Param("id")).First(&user)
+	c.JSON(200, &user)
+}

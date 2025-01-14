@@ -24,6 +24,7 @@ func main() {
 	router.Use(gin.Recovery(), middlewares.Logger(), middlewares.BasicAuth(), gindump.Dump())
 	config.Connect()
 	routes.UserRoute(router)
+	routes.DeviceRoute(router)
 	router.Run(":8080")
 	// router.GET("/", func(c *gin.Context) {
 	// 	c.String(200, "Hello world")

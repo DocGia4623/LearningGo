@@ -15,7 +15,15 @@ func Connect() {
 	if err != nil {
 		panic(err) // Báo lỗi nếu không kết nối được
 	}
-	// Tự động migrate bảng User
-	db.AutoMigrate(&models.User{})
+	// Tự động migrate tất cả các bảng
+	modelsToMigrate := []interface{}{
+		&models.User{},
+		&models.Device{},
+		// Add other models here
+	}
+
+	for _, model := range modelsToMigrate {
+		db.AutoMigrate(model)
+	}
 	DB = db
 }
