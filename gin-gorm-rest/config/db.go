@@ -11,7 +11,7 @@ var DB *gorm.DB
 
 func Connect() {
 	// Mở kết nối tới PostgreSQL
-	db, err := gorm.Open(postgres.Open("postgres://postgres:12345@localhost:5432/postgres"), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open("postgres://postgres:12345@database:5433/postgres"), &gorm.Config{})
 	if err != nil {
 		panic(err) // Báo lỗi nếu không kết nối được
 	}
