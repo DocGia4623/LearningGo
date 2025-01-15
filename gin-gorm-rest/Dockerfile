@@ -6,7 +6,7 @@ ENV GOARCH=amd64
 ENV GOOS=linux
 
 # Set the Current Working Directory inside the container
-WORKDIR /app
+WORKDIR ./app
 
 # Copy go mod and sum files
 COPY go.mod go.sum ./ 
@@ -29,4 +29,4 @@ RUN chmod +x ./app
 EXPOSE 8080
 
 # Command to run the executable
-CMD ["app"]
+CMD ["./app"]
