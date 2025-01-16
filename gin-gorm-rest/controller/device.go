@@ -11,6 +11,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// GetDevices godoc
+// @Summary Get all devices
+// @Description Get all devices
+// @Tags devices
+// @Accept  json
+// @Produce  json
+// @Success 200 {array} utils.DeviceResponse
+// @Router /device/ [get]
 func GetDevices(c *gin.Context) {
 	devices := []models.Device{}
 	if err := config.DB.Preload("User").Find(&devices).Error; err != nil {
@@ -34,6 +42,15 @@ func GetDevices(c *gin.Context) {
 	c.JSON(http.StatusOK, deviceResponses)
 }
 
+// CreateDevice godoc
+// @Summary Create a device
+// @Description Create a new device
+// @Tags devices
+// @Accept  json
+// @Produce  json
+// @Param device body models.Device true "Device"
+// @Success 200 {object} models.Device
+// @Router /device/ [post]
 func CreateDevice(c *gin.Context) {
 	var device models.Device
 	if err := c.BindJSON(&device); err != nil {
@@ -45,12 +62,31 @@ func CreateDevice(c *gin.Context) {
 	c.JSON(200, &device)
 }
 
+// DeleteDevice godoc
+// @Summary Delete a device
+// @Description Delete a device by ID
+// @Tags devices
+// @Accept  json
+// @Produce  json
+// @Param id path int true "Device ID"
+// @Success 200 {object} models.Device
+// @Router /device/{id} [delete]
 func DeleteDevice(c *gin.Context) {
 	var device models.Device
 	config.DB.Where("id = ?", c.Param("id")).Delete(&device)
 	c.JSON(200, &device)
 }
 
+// UpdateDevice godoc
+// @Summary Update a device
+// @Description Update a device by ID
+// @Tags devices
+// @Accept  json
+// @Produce  json
+// @Param id path int true "Device ID"
+// @Param device body models.Device true "Device"
+// @Success 200 {object} models.Device
+// @Router /device/{id} [put]
 func UpdateDevice(c *gin.Context) {
 	var device models.Device
 	if err := c.BindJSON(&device); err != nil {
@@ -62,6 +98,15 @@ func UpdateDevice(c *gin.Context) {
 	c.JSON(200, &device)
 }
 
+// GetDevice godoc
+// @Summary Get a device
+// @Description Get a device by ID
+// @Tags devices
+// @Accept  json
+// @Produce  json
+// @Param id path int true "Device ID"
+// @Success 200 {object} utils.DeviceResponse
+// @Router /device/{id} [get]
 func GetDevice(c *gin.Context) {
 	var device models.Device
 
