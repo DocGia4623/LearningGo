@@ -41,12 +41,18 @@ func main() {
 	router := gin.New()
 	log.Println("Starting server...")
 
+	appConfig, err := config.LoadConfig()
+	if err != nil {
+		log.Fatalf("Failed to load configuration: %v", err)
+	}
+
 	router.Use(gin.Recovery(), middlewares.Logger(), middlewares.BasicAuth(), gindump.Dump())
 
-	config.Connect()
+	config.Connect(&appConfig)
 
 	routes.UserRoute(router)
 	routes.DeviceRoute(router)
+	routes.AuthRoute(router)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.Run(":8080")

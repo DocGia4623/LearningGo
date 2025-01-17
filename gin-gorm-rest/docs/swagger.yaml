@@ -45,16 +45,18 @@ definitions:
         type: array
       email:
         type: string
+      fullname:
+        type: string
       id:
         type: integer
-      name:
-        type: string
       password:
         type: string
       updatedAt:
         type: string
+      username:
+        type: string
     type: object
-  utils.DeviceResponse:
+  response.DeviceResponse:
     properties:
       id:
         type: integer
@@ -65,16 +67,16 @@ definitions:
       quantity:
         type: integer
       user:
-        $ref: '#/definitions/utils.UserResponse'
+        $ref: '#/definitions/response.UserResponse'
     type: object
-  utils.UserResponse:
+  response.UserResponse:
     properties:
       email:
         type: string
+      fullname:
+        type: string
       id:
         type: integer
-      name:
-        type: string
     type: object
 host: localhost:8081
 info:
@@ -99,7 +101,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/utils.DeviceResponse'
+              $ref: '#/definitions/response.DeviceResponse'
             type: array
       summary: Get all devices
       tags:
@@ -162,7 +164,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/utils.DeviceResponse'
+            $ref: '#/definitions/response.DeviceResponse'
       summary: Get a device
       tags:
       - devices

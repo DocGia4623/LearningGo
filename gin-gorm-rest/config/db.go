@@ -1,19 +1,35 @@
 package config
 
 import (
+	"fmt"
+	"log"
 	"vietanh/gin-gorm-rest/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
+var (
+	DB        *gorm.DB
+	AppConfig Config
+)
 
-func Connect() {
+func Connect(config *Config) *gorm.DB {
+
+	// Tạo chuỗi kết nối PostgreSQL
+	connStr := fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		config.PostgresUser,
+		config.PostgresPassword,
+		config.DBHost,
+		config.DBPort,
+		config.PostgresDB,
+	)
+
 	// Mở kết nối tới PostgreSQL
-	db, err := gorm.Open(postgres.Open("postgres://postgres:12345@database:5432/postgres"), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
 	if err != nil {
-		panic(err) // Báo lỗi nếu không kết nối được
+		log.Fatalf("Failed to connect to the database: %v", err)
 	}
 	// Tự động migrate tất cả các bảng
 	modelsToMigrate := []interface{}{
@@ -26,4 +42,5 @@ func Connect() {
 		db.AutoMigrate(model)
 	}
 	DB = db
+	return db
 }

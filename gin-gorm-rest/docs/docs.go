@@ -39,7 +39,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/utils.DeviceResponse"
+                                "$ref": "#/definitions/response.DeviceResponse"
                             }
                         }
                     }
@@ -104,7 +104,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/utils.DeviceResponse"
+                            "$ref": "#/definitions/response.DeviceResponse"
                         }
                     }
                 }
@@ -408,21 +408,24 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "fullname": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
-                },
-                "name": {
-                    "type": "string"
                 },
                 "password": {
                     "type": "string"
                 },
                 "updatedAt": {
                     "type": "string"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },
-        "utils.DeviceResponse": {
+        "response.DeviceResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -438,21 +441,21 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "user": {
-                    "$ref": "#/definitions/utils.UserResponse"
+                    "$ref": "#/definitions/response.UserResponse"
                 }
             }
         },
-        "utils.UserResponse": {
+        "response.UserResponse": {
             "type": "object",
             "properties": {
                 "email": {
                     "type": "string"
                 },
+                "fullname": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
-                },
-                "name": {
-                    "type": "string"
                 }
             }
         }

@@ -3,8 +3,8 @@ package controller
 import (
 	"net/http"
 	"vietanh/gin-gorm-rest/config"
+	utils "vietanh/gin-gorm-rest/data/response"
 	"vietanh/gin-gorm-rest/models"
-	"vietanh/gin-gorm-rest/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/mapstructure"
