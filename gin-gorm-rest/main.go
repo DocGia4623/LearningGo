@@ -5,7 +5,8 @@ import (
 	"log"
 	"os"
 	"vietanh/gin-gorm-rest/config"
-	"vietanh/gin-gorm-rest/middlewares"
+	"vietanh/gin-gorm-rest/controller"
+	"vietanh/gin-gorm-rest/repository"
 	"vietanh/gin-gorm-rest/routes"
 
 	"github.com/gin-gonic/gin"
@@ -46,11 +47,23 @@ func main() {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
-	router.Use(gin.Recovery(), middlewares.Logger(), middlewares.BasicAuth(), gindump.Dump())
+	router.Use(gin.Recovery(), gindump.Dump())
 
 	config.Connect(&appConfig)
 
-	routes.UserRoute(router)
+	// validate := validator.New()
+
+	//Init Repository
+	userRepository := repository.NewUserRepositoryImpl(config.DB)
+
+	//Init Service
+	// authenticationService := service.NewAuthenticationServiceImpl(userRepository, validate)
+
+	// //Init controller
+	// authenticationController := controller.NewAuthenticationController(authenticationService)
+	usersController := controller.NewUserController(userRepository)
+
+	routes.UserRoute(userRepository, *usersController, router)
 	routes.DeviceRoute(router)
 	routes.AuthRoute(router)
 

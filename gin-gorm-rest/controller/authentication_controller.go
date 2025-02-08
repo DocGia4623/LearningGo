@@ -52,12 +52,24 @@ func (controller *AuthenticationController) Register(c *gin.Context) {
 	err := c.ShouldBindJSON(&CreateUserRequest)
 	helper.ErrorPanic(err)
 
-	controller.AuthenticationService.Register(CreateUserRequest)
-	webResponse := response.Response{
-		Code:    http.StatusOK,
-		Status:  "ok",
-		Message: "Register success",
-		Data:    nil,
+	err1 := controller.AuthenticationService.Register(CreateUserRequest)
+
+	var webResponse response.Response
+
+	if err1 != nil {
+		webResponse = response.Response{
+			Code:    http.StatusBadRequest,
+			Status:  "bad request",
+			Message: "duplicate username",
+		}
+	} else {
+		webResponse = response.Response{
+			Code:    http.StatusOK,
+			Status:  "ok",
+			Message: "Register success",
+			Data:    nil,
+		}
 	}
+
 	c.JSON(http.StatusOK, webResponse)
 }

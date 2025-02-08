@@ -45,14 +45,16 @@ func (u *UserRepositoryImpl) FindByID(userId int) (models.User, error) {
 }
 
 // FindByUserName implements UserRepository.
-func (u *UserRepositoryImpl) FindByUserName(userName string) (models.User, error) {
-	var users models.User
-	result := u.Db.Where("user_name = ?", userName).First(&users)
+func (u *UserRepositoryImpl) FindByUserName(userName string) (*models.User, error) {
+	var user models.User
+	result := u.Db.Where("user_name = ?", userName).First(&user)
 	if result.Error != nil {
-		return users, errors.New("user not found")
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, nil // Trả về nil nếu không tìm thấy bản ghi
+		}
+		return nil, result.Error // Trả về lỗi nếu có lỗi khác từ GORM
 	}
-	return users, nil
-
+	return &user, nil // Trả về con trỏ đến user nếu tìm thấy
 }
 
 // Save implements UserRepository.

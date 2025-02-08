@@ -8,7 +8,7 @@ import (
 )
 
 func GenerateToken(ttl time.Duration, payload interface{}, secretJWTkey string) (string, error) {
-	token := jwt.New(jwt.SigningMethodES256)
+	token := jwt.New(jwt.SigningMethodHS256)
 
 	now := time.Now().UTC()
 	claim := token.Claims.(jwt.MapClaims)

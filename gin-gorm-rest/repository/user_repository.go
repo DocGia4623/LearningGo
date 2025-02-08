@@ -8,5 +8,5 @@ type UserRepository interface {
 	Delete(userId int)
 	FindByID(userId int) (models.User, error)
 	FindAll() []models.User
-	FindByUserName(userName string) (models.User, error)
+	FindByUserName(userName string) (*models.User, error)
 }

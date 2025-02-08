@@ -1,8 +1,11 @@
 package controller
 
 import (
+	"net/http"
 	"vietanh/gin-gorm-rest/config"
+	"vietanh/gin-gorm-rest/data/response"
 	"vietanh/gin-gorm-rest/models"
+	"vietanh/gin-gorm-rest/repository"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,10 +18,24 @@ import (
 // @Produce  json
 // @Success 200 {array} models.User
 // @Router /user/ [get]
-func GetUsers(c *gin.Context) {
-	users := []models.User{}
-	config.DB.Find(&users)
-	c.JSON(200, &users)
+func (controller *UserController) GetUsers(c *gin.Context) {
+	users := controller.UserRepository.FindAll()
+	webResponse := response.Response{
+		Code:   http.StatusOK,
+		Status: "ok",
+		Data:   users,
+	}
+	c.JSON(200, &webResponse)
+}
+
+type UserController struct {
+	UserRepository repository.UserRepository
+}
+
+func NewUserController(userRepository repository.UserRepository) *UserController {
+	return &UserController{
+		UserRepository: userRepository,
+	}
 }
 
 // CreateUser godoc

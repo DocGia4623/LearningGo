@@ -2,14 +2,17 @@ package routes
 
 import (
 	"vietanh/gin-gorm-rest/controller"
+	"vietanh/gin-gorm-rest/middlewares"
+	"vietanh/gin-gorm-rest/repository"
 
 	"github.com/gin-gonic/gin"
 )
 
 // UserRoute defines the user routes
-func UserRoute(router *gin.Engine) {
-	userRoutes := router.Group("/user")
+func UserRoute(userRepository repository.UserRepository, userController controller.UserController, router *gin.Engine) {
+	userRoutes := router.Group("/user", middlewares.DeserializeUser(userRepository))
 	{
+
 		// @Summary Get all users
 		// @Description Get all users
 		// @Tags users
@@ -17,7 +20,7 @@ func UserRoute(router *gin.Engine) {
 		// @Produce  json
 		// @Success 200 {array} models.User
 		// @Router /user/ [get]
-		userRoutes.GET("/", controller.GetUsers)
+		userRoutes.GET("/", userController.GetUsers)
 
 		// @Summary Create a user
 		// @Description Create a new user

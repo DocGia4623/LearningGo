@@ -49,15 +49,33 @@ func (a *AuthenticationServiceImpl) Login(users request.LoginRequest) (string, e
 }
 
 // Register implements AuthenticationService.
-func (a *AuthenticationServiceImpl) Register(users request.CreateUserRequest) {
-	hashedPassword, err := utils.HashPassword(users.Password)
-	helper.ErrorPanic(err)
+func (a *AuthenticationServiceImpl) Register(users request.CreateUserRequest) error {
+	// Kiểm tra xem username đã tồn tại chưa
+	user, user_err := a.UserRepository.FindByUserName(users.UserName)
+	if user_err != nil && user_err.Error() != "user not found" {
+		// Nếu có lỗi ngoài việc không tìm thấy user, trả về lỗi đó
+		return user_err
+	}
+	if user != nil {
+		// Nếu user đã tồn tại trong cơ sở dữ liệu
+		return errors.New("Username already exists")
+	}
 
+	// Hash mật khẩu
+	hashedPassword, err := utils.HashPassword(users.Password)
+	if err != nil {
+		return err // Nếu có lỗi khi hash mật khẩu, trả về lỗi
+	}
+
+	// Tạo user mới
 	newUser := models.User{
 		UserName: users.UserName,
 		Password: hashedPassword,
 		Email:    users.Email,
 		FullName: users.FullName,
 	}
+
+	// Lưu user vào database
 	a.UserRepository.Save(newUser)
+	return nil // Trả về nil nếu không có lỗi
 }
