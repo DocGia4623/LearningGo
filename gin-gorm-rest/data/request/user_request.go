@@ -5,6 +5,7 @@ type CreateUserRequest struct {
 	FullName string `validate:"required,min=2,max=100" json:"fullname"`
 	Email    string `validate:"required,min=2,max=100" json:"email"`
 	Password string `validate:"required,min=2,max=100" json:"password"`
+	Role     string `validate:"required,min=2,max=100" json:"role"`
 }
 type UpdateUserRequest struct {
 	Id       uint   `validate:"required"`
@@ -12,6 +13,7 @@ type UpdateUserRequest struct {
 	FullName string `validate:"required,min=2,max=100" json:"fullname"`
 	Email    string `validate:"required,min=2,max=100" json:"email"`
 	Password string `validate:"required,min=2,max=100" json:"password"`
+	Role     string `validate:"required,min=2,max=100" json:"role"`
 }
 
 type LoginRequest struct {

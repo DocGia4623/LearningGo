@@ -20,7 +20,7 @@ func UserRoute(userRepository repository.UserRepository, userController controll
 		// @Produce  json
 		// @Success 200 {array} models.User
 		// @Router /user/ [get]
-		userRoutes.GET("/", userController.GetUsers)
+		userRoutes.GET("/", middlewares.AuthorizeRole(userRepository, "admin", "manager"), userController.GetUsers)
 
 		// @Summary Create a user
 		// @Description Create a new user
@@ -30,7 +30,7 @@ func UserRoute(userRepository repository.UserRepository, userController controll
 		// @Param user body models.User true "User"
 		// @Success 200 {object} models.User
 		// @Router /user/ [post]
-		userRoutes.POST("/", controller.CreateUser)
+		userRoutes.POST("/", middlewares.AuthorizeRole(userRepository, "admin", "manager"), controller.CreateUser)
 
 		// @Summary Delete a user
 		// @Description Delete a user by ID
@@ -40,7 +40,7 @@ func UserRoute(userRepository repository.UserRepository, userController controll
 		// @Param id path int true "User ID"
 		// @Success 200 {object} models.User
 		// @Router /user/{id} [delete]
-		userRoutes.DELETE("/:id", controller.DeleteUser)
+		userRoutes.DELETE("/:id", middlewares.AuthorizeRole(userRepository, "admin", "manager"), controller.DeleteUser)
 
 		// @Summary Update a user
 		// @Description Update a user by ID
@@ -51,7 +51,7 @@ func UserRoute(userRepository repository.UserRepository, userController controll
 		// @Param user body models.User true "User"
 		// @Success 200 {object} models.User
 		// @Router /user/{id} [put]
-		userRoutes.PUT("/:id", controller.UpdateUser)
+		userRoutes.PUT("/:id", middlewares.AuthorizeRole(userRepository, "admin", "manager", "user"), controller.UpdateUser)
 
 		// @Summary Get a user
 		// @Description Get a user by ID
@@ -61,6 +61,6 @@ func UserRoute(userRepository repository.UserRepository, userController controll
 		// @Param id path int true "User ID"
 		// @Success 200 {object} models.User
 		// @Router /user/{id} [get]
-		userRoutes.GET("/:id", controller.GetUser)
+		userRoutes.GET("/:id", middlewares.AuthorizeRole(userRepository, "admin", "manager"), controller.GetUser)
 	}
 }

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"net/http"
 	"vietanh/gin-gorm-rest/data/request"
 	"vietanh/gin-gorm-rest/data/response"
@@ -71,5 +72,34 @@ func (controller *AuthenticationController) Register(c *gin.Context) {
 		}
 	}
 
+	c.JSON(http.StatusOK, webResponse)
+}
+
+func (controller *AuthenticationController) Logout(c *gin.Context) {
+	// Lấy token từ header Authorization
+	token := c.GetHeader("Authorization")
+	if token == "" {
+		c.JSON(http.StatusBadRequest, response.Response{
+			Code:    http.StatusBadRequest,
+			Status:  "bad request",
+			Message: "Token is required",
+		})
+		return
+	}
+	// thêm token vào blacklist
+	err := controller.AuthenticationService.Logout(context.Background(), token)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Response{
+			Code:    http.StatusBadRequest,
+			Status:  "bad request",
+			Message: err.Error(),
+		})
+		return
+	}
+	webResponse := response.Response{
+		Code:    http.StatusOK,
+		Status:  "ok",
+		Message: "Logout success",
+	}
 	c.JSON(http.StatusOK, webResponse)
 }

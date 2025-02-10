@@ -37,6 +37,7 @@ func setupLogOutput() {
 
 // setupLogOutput sets up the log output to a file and stdout
 func main() {
+
 	// @host localhost:8081
 	setupLogOutput()
 	router := gin.New()
@@ -49,7 +50,7 @@ func main() {
 
 	router.Use(gin.Recovery(), gindump.Dump())
 
-	config.Connect(&appConfig)
+	config.InitConfig(&appConfig)
 
 	// validate := validator.New()
 

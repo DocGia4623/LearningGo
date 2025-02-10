@@ -20,6 +20,10 @@ type Config struct {
 	TokenExpiresIn time.Duration
 	TokenMaxAge    int
 	TokenSecret    string
+
+	RedisHost string
+	RedisPort string
+	RedisDB   int
 }
 
 // LoadConfig tải các thông số cấu hình từ file .env vào struct Config
@@ -35,6 +39,7 @@ func LoadConfig() (Config, error) {
 	requiredEnvVars := []string{
 		"POSTGRES_USER", "POSTGRES_PASSWORD", "DB_HOST", "DB_PORT", "POSTGRES_DB",
 		"TOKEN_EXPIRATION", "TOKEN_MAXAGE", "TOKEN_SECRET",
+		"REDIS_HOST", "REDIS_PORT", "REDIS_DB",
 	}
 	for _, env := range requiredEnvVars {
 		if os.Getenv(env) == "" {
@@ -54,6 +59,12 @@ func LoadConfig() (Config, error) {
 		return Config{}, fmt.Errorf("Invalid value for TOKEN_MAXAGE: %v", err)
 	}
 
+	// Parse REDIS_DB
+	redisDB, err := strconv.Atoi(os.Getenv("REDIS_DB"))
+	if err != nil {
+		return Config{}, fmt.Errorf("Invalid value for REDIS_DB: %v", err)
+	}
+
 	// Return configuration struct
 	return Config{
 		PostgresUser:     os.Getenv("POSTGRES_USER"),
@@ -64,5 +75,8 @@ func LoadConfig() (Config, error) {
 		TokenExpiresIn:   tokenExpiration,
 		TokenMaxAge:      tokenMaxAge,
 		TokenSecret:      os.Getenv("TOKEN_SECRET"),
+		RedisHost:        os.Getenv("REDIS_HOST"),
+		RedisPort:        os.Getenv("REDIS_PORT"),
+		RedisDB:          redisDB,
 	}, nil
 }

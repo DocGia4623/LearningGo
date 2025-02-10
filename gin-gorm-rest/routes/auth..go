@@ -43,5 +43,14 @@ func AuthRoute(router *gin.Engine) {
 		// @Success 200 {object} response.Response
 		// @Router /auth/register [post]
 		authRoutes.POST("/register", authController.Register)
+
+		// @Summary Logout
+		// @Description Logout
+		// @Tags auth
+		// @Accept  json
+		// @Produce  json
+		// @Success 200 {object} response.Response
+		// @Router /auth/logout [post]
+		authRoutes.POST("/logout", authController.Logout)
 	}
 }

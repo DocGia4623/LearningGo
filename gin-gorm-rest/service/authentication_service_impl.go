@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+	"time"
 	"vietanh/gin-gorm-rest/config"
 	"vietanh/gin-gorm-rest/data/request"
 	"vietanh/gin-gorm-rest/helper"
@@ -28,7 +30,7 @@ func NewAuthenticationServiceImpl(userRepository repository.UserRepository, vali
 // Login implements AuthenticationService.
 func (a *AuthenticationServiceImpl) Login(users request.LoginRequest) (string, error) {
 	// Find username in the database
-	new_user, user_err := a.UserRepository.FindByUserName(users.UserName)
+	login_user, user_err := a.UserRepository.FindByUserName(users.UserName)
 	if user_err != nil {
 		return "", errors.New("invalid username or password")
 	}
@@ -36,25 +38,35 @@ func (a *AuthenticationServiceImpl) Login(users request.LoginRequest) (string, e
 	config, _ := config.LoadConfig()
 
 	// Verify password
-	verify_err := utils.VerifyPassword(new_user.Password, users.Password)
+	verify_err := utils.VerifyPassword(login_user.Password, users.Password)
 	if verify_err != nil {
 		return "", errors.New("invalid username or password")
 	}
 
 	// Generate token
-	token, err_token := utils.GenerateToken(config.TokenExpiresIn, new_user.ID, config.TokenSecret)
+	token, err_token := utils.GenerateToken(config.TokenExpiresIn, login_user.ID, config.TokenSecret)
 	helper.ErrorPanic(err_token)
 
 	return token, nil
+}
+
+func (a *AuthenticationServiceImpl) Logout(ctx context.Context, token string) error {
+
+	// Lưu token vào redis, đặt thời gian hết hạn bằng thời gian còn lại của token
+	expiration := time.Hour
+	err := config.RedisClient.Set(ctx, token, "logout", expiration).Err()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Register implements AuthenticationService.
 func (a *AuthenticationServiceImpl) Register(users request.CreateUserRequest) error {
 	// Kiểm tra xem username đã tồn tại chưa
 	user, user_err := a.UserRepository.FindByUserName(users.UserName)
-	if user_err != nil && user_err.Error() != "user not found" {
-		// Nếu có lỗi ngoài việc không tìm thấy user, trả về lỗi đó
-		return user_err
+	if user_err != nil {
+		return user_err // Nếu có lỗi khi tìm kiếm user, trả về lỗi đó
 	}
 	if user != nil {
 		// Nếu user đã tồn tại trong cơ sở dữ liệu
@@ -73,6 +85,7 @@ func (a *AuthenticationServiceImpl) Register(users request.CreateUserRequest) er
 		Password: hashedPassword,
 		Email:    users.Email,
 		FullName: users.FullName,
+		Role:     users.Role,
 	}
 
 	// Lưu user vào database
