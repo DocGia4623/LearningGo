@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
+	"vietanh/gin-gorm-rest/config"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -84,19 +86,19 @@ func ValidateRefreshToken(token string, signedJWTKey string) (interface{}, inter
 }
 
 func ValidateToken(token string, signedJWTKey string) (interface{}, error) {
-	// ctx := context.Background()
+	ctx := context.Background()
 
-	// // 🔹 Kiểm tra token trong Redis (Them tiền tố trước)
-	// redisToken := "Bearer " + token
+	// 🔹 Kiểm tra token trong Redis (Them tiền tố trước)
+	redisToken := "Bearer " + token
 
-	// // 1️⃣ Kiểm tra token có bị thu hồi không trong Redis
-	// exists, err := config.RedisClient.Exists(ctx, redisToken).Result()
-	// if err != nil {
-	// 	return nil, fmt.Errorf("redis error: %w", err)
-	// }
-	// if exists > 0 { // Nếu token có trong Redis, nghĩa là nó đã bị thu hồi
-	// 	return nil, fmt.Errorf("token has been revoked")
-	// }
+	// 1️⃣ Kiểm tra token có bị thu hồi không trong Redis
+	exists, err := config.RedisClient.Exists(ctx, redisToken).Result()
+	if err != nil {
+		return nil, fmt.Errorf("redis error: %w", err)
+	}
+	if exists > 0 { // Nếu token có trong Redis, nghĩa là nó đã bị thu hồi
+		return nil, fmt.Errorf("token has been revoked")
+	}
 
 	// 2️⃣ Giải mã token
 	tkn, err := jwt.Parse(token, func(jwtToken *jwt.Token) (interface{}, error) {

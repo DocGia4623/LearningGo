@@ -18,7 +18,7 @@ services:
       timeout: 5s
       retries: 5
 
-      redis:
+  redis:
     image: redis:latest
     restart: always
     ports:

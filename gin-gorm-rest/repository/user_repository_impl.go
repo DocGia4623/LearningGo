@@ -52,6 +52,7 @@ func (u *UserRepositoryImpl) FindByUserName(userName string) (*models.User, erro
 		if result.Error == gorm.ErrRecordNotFound {
 			return nil, nil // Trả về nil nếu không tìm thấy bản ghi
 		}
+		helper.ErrorPanic(result.Error)
 		return nil, result.Error // Trả về lỗi nếu có lỗi khác từ GORM
 	}
 	return &user, nil // Trả về con trỏ đến user nếu tìm thấy

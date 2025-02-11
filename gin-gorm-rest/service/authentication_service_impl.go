@@ -34,6 +34,9 @@ func (a *AuthenticationServiceImpl) Login(users request.LoginRequest) (string, s
 	if user_err != nil {
 		return "", "", errors.New("invalid username or password")
 	}
+	if login_user == nil {
+		return "", "", errors.New("invalid username or password") // Xử lý khi user không tồn tại
+	}
 
 	config, _ := config.LoadConfig()
 
@@ -58,7 +61,7 @@ func (a *AuthenticationServiceImpl) Logout(ctx context.Context, refreshToken str
 
 	// Lưu token vào redis
 	expiration := time.Hour
-	err := config.RedisClient.Set(ctx, refreshToken, "logout", expiration).Err()
+	err := config.RedisClient.Set(ctx, accessToken, "logout", expiration).Err()
 	if err != nil {
 		return err
 	}

@@ -24,44 +24,42 @@ func NewAuthenticationController(authenticationService service.AuthenticationSer
 		RefreshTokenService:   refreshTokenService,
 	}
 }
+
+// RefreshToken godoc
+// @Summary Refresh access token
+// @Description Generate a new access token using a refresh token
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Router /auth/refresh [post]
 func (controller *AuthenticationController) RefreshToken(c *gin.Context) {
-	// Lấy refresh token từ cookie
 	refreshToken, err := c.Cookie("refresh_token")
 	if err != nil {
-		webResponse := response.Response{
-			Code:    http.StatusUnauthorized,
-			Status:  "unauthorized",
-			Message: "Refresh token is missing",
-		}
-		c.JSON(http.StatusBadRequest, webResponse)
+		c.JSON(http.StatusBadRequest, response.Response{Code: http.StatusUnauthorized, Status: "unauthorized", Message: "Refresh token is missing"})
 		return
 	}
 	config, _ := config.LoadConfig()
 	newAccessToken, newRefreshToken, err := controller.RefreshTokenService.RefreshToken(refreshToken, config.RefreshTokenSecret)
 	c.SetCookie("refresh_token", newRefreshToken, 3600*24*7, "/", "", false, true)
 	if err != nil {
-		webResponse := response.Response{
-			Code:    http.StatusBadRequest,
-			Status:  "bad request",
-			Message: "Invalid refresh token",
-		}
-		c.JSON(http.StatusBadRequest, webResponse)
+		c.JSON(http.StatusBadRequest, response.Response{Code: http.StatusBadRequest, Status: "bad request", Message: "Invalid refresh token"})
 		return
 	}
-	loginResponse := response.LoginResponse{
-		TokenType:    "Bearer Token",
-		RefreshToken: newRefreshToken,
-		AccessToken:  newAccessToken,
-	}
-	webResponse := response.Response{
-		Code:    http.StatusOK,
-		Status:  "ok",
-		Message: "Refresh token success",
-		Data:    loginResponse,
-	}
-	c.JSON(http.StatusOK, webResponse)
+	c.JSON(http.StatusOK, response.Response{Code: http.StatusOK, Status: "ok", Message: "Refresh token success", Data: response.LoginResponse{TokenType: "Bearer Token", RefreshToken: newRefreshToken, AccessToken: newAccessToken}})
 }
 
+// Login godoc
+// @Summary Authenticate user
+// @Description Authenticate a user and return access & refresh tokens
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param request body request.LoginRequest true "Login Request"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Router /auth/login [post]
 func (controller *AuthenticationController) Login(c *gin.Context) {
 	LoginRequest := request.LoginRequest{}
 	err := c.ShouldBindJSON(&LoginRequest)
@@ -69,36 +67,24 @@ func (controller *AuthenticationController) Login(c *gin.Context) {
 
 	refreshToken, accessToken, err := controller.AuthenticationService.Login(LoginRequest)
 	if err != nil {
-		webResponse := response.Response{
-			Code:    http.StatusBadRequest,
-			Status:  "bad request",
-			Message: "Invalid username or password",
-		}
-		c.JSON(http.StatusBadRequest, webResponse)
+		c.JSON(http.StatusBadRequest, response.Response{Code: http.StatusBadRequest, Status: "bad request", Message: "Invalid username or password"})
 		return
 	}
-
-	// Lưu refresh token vào cookie
 	c.SetCookie("refresh_token", refreshToken, 3600*24*7, "/", "", false, true)
-	// Lưu refresh token vào database
-	saveToken := models.RefreshToken{
-		Token: refreshToken,
-	}
-	controller.RefreshTokenService.SaveToken(saveToken)
-	loginResponse := response.LoginResponse{
-		TokenType:    "Bearer Token",
-		RefreshToken: refreshToken,
-		AccessToken:  accessToken,
-	}
-	webResponse := response.Response{
-		Code:    http.StatusOK,
-		Status:  "ok",
-		Message: "Login success",
-		Data:    loginResponse,
-	}
-	c.JSON(http.StatusOK, webResponse)
+	controller.RefreshTokenService.SaveToken(models.RefreshToken{Token: refreshToken})
+	c.JSON(http.StatusOK, response.Response{Code: http.StatusOK, Status: "ok", Message: "Login success", Data: response.LoginResponse{TokenType: "Bearer Token", RefreshToken: refreshToken, AccessToken: accessToken}})
 }
 
+// Register godoc
+// @Summary Register a new user
+// @Description Create a new user account
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param request body request.CreateUserRequest true "Register Request"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Router /auth/register [post]
 func (controller *AuthenticationController) Register(c *gin.Context) {
 	CreateUserRequest := request.CreateUserRequest{}
 	err := c.ShouldBindJSON(&CreateUserRequest)
@@ -107,54 +93,38 @@ func (controller *AuthenticationController) Register(c *gin.Context) {
 	err1 := controller.AuthenticationService.Register(CreateUserRequest)
 
 	var webResponse response.Response
-
 	if err1 != nil {
-		webResponse = response.Response{
-			Code:    http.StatusBadRequest,
-			Status:  "bad request",
-			Message: "duplicate username",
-		}
+		webResponse = response.Response{Code: http.StatusBadRequest, Status: "bad request", Message: "duplicate username"}
 	} else {
-		webResponse = response.Response{
-			Code:    http.StatusOK,
-			Status:  "ok",
-			Message: "Register success",
-			Data:    nil,
-		}
+		webResponse = response.Response{Code: http.StatusOK, Status: "ok", Message: "Register success"}
 	}
-
 	c.JSON(http.StatusOK, webResponse)
 }
 
+// Logout godoc
+// @Summary Logout user
+// @Description Invalidate access and refresh tokens
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Access Token"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Router /auth/logout [post]
 func (controller *AuthenticationController) Logout(c *gin.Context) {
-	// Lấy token từ header Authorization
 	token := c.GetHeader("Authorization")
 	if token == "" {
-		c.JSON(http.StatusBadRequest, response.Response{
-			Code:    http.StatusBadRequest,
-			Status:  "bad request",
-			Message: "Token is required",
-		})
+		c.JSON(http.StatusBadRequest, response.Response{Code: http.StatusBadRequest, Status: "bad request", Message: "Token is required"})
 		return
 	}
 	refreshToken, err := c.Cookie("refresh_token")
 	if err != nil {
 		helper.ErrorPanic(err)
 	}
-	// thêm token vào blacklist
 	err = controller.AuthenticationService.Logout(context.Background(), refreshToken, token)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, response.Response{
-			Code:    http.StatusBadRequest,
-			Status:  "bad request",
-			Message: err.Error(),
-		})
+		c.JSON(http.StatusBadRequest, response.Response{Code: http.StatusBadRequest, Status: "bad request", Message: err.Error()})
 		return
 	}
-	webResponse := response.Response{
-		Code:    http.StatusOK,
-		Status:  "ok",
-		Message: "Logout success",
-	}
-	c.JSON(http.StatusOK, webResponse)
+	c.JSON(http.StatusOK, response.Response{Code: http.StatusOK, Status: "ok", Message: "Logout success"})
 }
