@@ -17,9 +17,12 @@ type Config struct {
 	DBPort           string
 	PostgresDB       string
 
-	TokenExpiresIn time.Duration
-	TokenMaxAge    int
-	TokenSecret    string
+	RefreshTokenExpiresIn time.Duration
+	RefreshTokenMaxAge    int
+	RefreshTokenSecret    string
+
+	AccessTokenExpiresIn time.Duration
+	AccessTokenSecret    string
 
 	RedisHost string
 	RedisPort string
@@ -38,7 +41,8 @@ func LoadConfig() (Config, error) {
 	// Check for required environment variables
 	requiredEnvVars := []string{
 		"POSTGRES_USER", "POSTGRES_PASSWORD", "DB_HOST", "DB_PORT", "POSTGRES_DB",
-		"TOKEN_EXPIRATION", "TOKEN_MAXAGE", "TOKEN_SECRET",
+		"REFRESH_TOKEN_EXPIRATION", "REFRESH_TOKEN_MAXAGE", "REFRESH_TOKEN_SECRET",
+		"ACCESS_TOKEN_EXPIRATION", "ACCESS_TOKEN_SECRET",
 		"REDIS_HOST", "REDIS_PORT", "REDIS_DB",
 	}
 	for _, env := range requiredEnvVars {
@@ -48,15 +52,20 @@ func LoadConfig() (Config, error) {
 	}
 
 	// Parse TOKEN_EXPIRATION (e.g., "60m", "2h", ...)
-	tokenExpiration, err := time.ParseDuration(os.Getenv("TOKEN_EXPIRATION"))
+	refreshTokenExpiration, err := time.ParseDuration(os.Getenv("REFRESH_TOKEN_EXPIRATION"))
 	if err != nil {
-		return Config{}, fmt.Errorf("Invalid format for TOKEN_EXPIRATION: %v", err)
+		return Config{}, fmt.Errorf("Invalid format for REFRESH TOKEN_EXPIRATION: %v", err)
+	}
+
+	accessTokenExpiration, err := time.ParseDuration(os.Getenv("ACCESS_TOKEN_EXPIRATION"))
+	if err != nil {
+		return Config{}, fmt.Errorf("Invalid format for ACCESS TOKEN_EXPIRATION: %v", err)
 	}
 
 	// Parse TOKEN_MAXAGE
-	tokenMaxAge, err := strconv.Atoi(os.Getenv("TOKEN_MAXAGE"))
+	refreshTokenMaxAge, err := strconv.Atoi(os.Getenv("REFRESH_TOKEN_MAXAGE"))
 	if err != nil {
-		return Config{}, fmt.Errorf("Invalid value for TOKEN_MAXAGE: %v", err)
+		return Config{}, fmt.Errorf("Invalid value for REFRESH_TOKEN_MAXAGE: %v", err)
 	}
 
 	// Parse REDIS_DB
@@ -67,16 +76,18 @@ func LoadConfig() (Config, error) {
 
 	// Return configuration struct
 	return Config{
-		PostgresUser:     os.Getenv("POSTGRES_USER"),
-		PostgresPassword: os.Getenv("POSTGRES_PASSWORD"),
-		DBHost:           os.Getenv("DB_HOST"),
-		DBPort:           os.Getenv("DB_PORT"),
-		PostgresDB:       os.Getenv("POSTGRES_DB"),
-		TokenExpiresIn:   tokenExpiration,
-		TokenMaxAge:      tokenMaxAge,
-		TokenSecret:      os.Getenv("TOKEN_SECRET"),
-		RedisHost:        os.Getenv("REDIS_HOST"),
-		RedisPort:        os.Getenv("REDIS_PORT"),
-		RedisDB:          redisDB,
+		PostgresUser:          os.Getenv("POSTGRES_USER"),
+		PostgresPassword:      os.Getenv("POSTGRES_PASSWORD"),
+		DBHost:                os.Getenv("DB_HOST"),
+		DBPort:                os.Getenv("DB_PORT"),
+		PostgresDB:            os.Getenv("POSTGRES_DB"),
+		RefreshTokenExpiresIn: refreshTokenExpiration,
+		RefreshTokenMaxAge:    refreshTokenMaxAge,
+		RefreshTokenSecret:    os.Getenv("REFRESH_TOKEN_SECRET"),
+		AccessTokenExpiresIn:  accessTokenExpiration,
+		AccessTokenSecret:     os.Getenv("ACCESS_TOKEN_SECRET"),
+		RedisHost:             os.Getenv("REDIS_HOST"),
+		RedisPort:             os.Getenv("REDIS_PORT"),
+		RedisDB:               redisDB,
 	}, nil
 }

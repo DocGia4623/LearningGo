@@ -28,7 +28,7 @@ func AuthorizeRole(userRepo repository.UserRepository, allowedRoles ...string) g
 			return
 		}
 		config, _ := config.LoadConfig()
-		sub, err := utils.ValidateToken(token, config.TokenSecret)
+		sub, err := utils.ValidateToken(token, config.AccessTokenSecret)
 		if err != nil {
 			ctx.AbortWithStatusJSON(401, gin.H{"status": "fail", "message": err.Error()})
 			return

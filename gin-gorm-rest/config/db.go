@@ -38,6 +38,7 @@ func Connect(config *Config) *gorm.DB {
 	modelsToMigrate := []interface{}{
 		&models.User{},
 		&models.Device{},
+		&models.RefreshToken{},
 		// Add other models here
 	}
 

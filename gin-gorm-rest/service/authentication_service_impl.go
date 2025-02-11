@@ -28,11 +28,11 @@ func NewAuthenticationServiceImpl(userRepository repository.UserRepository, vali
 }
 
 // Login implements AuthenticationService.
-func (a *AuthenticationServiceImpl) Login(users request.LoginRequest) (string, error) {
+func (a *AuthenticationServiceImpl) Login(users request.LoginRequest) (string, string, error) {
 	// Find username in the database
 	login_user, user_err := a.UserRepository.FindByUserName(users.UserName)
 	if user_err != nil {
-		return "", errors.New("invalid username or password")
+		return "", "", errors.New("invalid username or password")
 	}
 
 	config, _ := config.LoadConfig()
@@ -40,24 +40,31 @@ func (a *AuthenticationServiceImpl) Login(users request.LoginRequest) (string, e
 	// Verify password
 	verify_err := utils.VerifyPassword(login_user.Password, users.Password)
 	if verify_err != nil {
-		return "", errors.New("invalid username or password")
+		return "", "", errors.New("invalid username or password")
 	}
 
-	// Generate token
-	token, err_token := utils.GenerateToken(config.TokenExpiresIn, login_user.ID, config.TokenSecret)
+	// Generate access token
+	accessToken, err_token := utils.GenerateToken(config.AccessTokenExpiresIn, login_user.ID, config.AccessTokenSecret)
 	helper.ErrorPanic(err_token)
 
-	return token, nil
+	// Generate refresh token
+	refreshToken, err_refresh := utils.GenerateToken(config.RefreshTokenExpiresIn, login_user.ID, config.RefreshTokenSecret)
+	helper.ErrorPanic(err_refresh)
+
+	return refreshToken, accessToken, nil
 }
 
-func (a *AuthenticationServiceImpl) Logout(ctx context.Context, token string) error {
+func (a *AuthenticationServiceImpl) Logout(ctx context.Context, refreshToken string, accessToken string) error {
 
-	// Lưu token vào redis, đặt thời gian hết hạn bằng thời gian còn lại của token
+	// Lưu token vào redis
 	expiration := time.Hour
-	err := config.RedisClient.Set(ctx, token, "logout", expiration).Err()
+	err := config.RedisClient.Set(ctx, refreshToken, "logout", expiration).Err()
 	if err != nil {
 		return err
 	}
+	// Xóa refresh token khỏi database
+	RefreshTokenService := NewRefreshTokenServiceImpl(repository.NewRefreshTokenRepositoryImpl(config.DB))
+	RefreshTokenService.DeleteToken(refreshToken)
 	return nil
 }
 

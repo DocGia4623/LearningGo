@@ -7,8 +7,9 @@ type UserResponse struct {
 }
 
 type LoginResponse struct {
-	TokenType string `json:"token_type"`
-	Token     string `json:"token"`
+	TokenType    string `json:"token_type"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 type DeviceResponse struct {

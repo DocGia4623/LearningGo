@@ -18,10 +18,12 @@ func AuthRoute(router *gin.Engine) {
 	}
 	db := config.Connect(&appConfig) // Ensure the DB connection is established
 	userRepo := repository.NewUserRepositoryImpl(db)
+	refreshTokenRepo := repository.NewRefreshTokenRepositoryImpl(db)
 	validate := validator.New()
 
 	authenticationService := service.NewAuthenticationServiceImpl(userRepo, validate)
-	authController := controller.NewAuthenticationController(authenticationService)
+	refreshTokenService := service.NewRefreshTokenServiceImpl(refreshTokenRepo)
+	authController := controller.NewAuthenticationController(authenticationService, refreshTokenService)
 	authRoutes := router.Group("/auth")
 	{
 		// @Summary Login
@@ -52,5 +54,6 @@ func AuthRoute(router *gin.Engine) {
 		// @Success 200 {object} response.Response
 		// @Router /auth/logout [post]
 		authRoutes.POST("/logout", authController.Logout)
+		authRoutes.POST("/refresh", authController.RefreshToken)
 	}
 }
