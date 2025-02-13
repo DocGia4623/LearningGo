@@ -36,7 +36,6 @@ func (u *UserRepositoryImpl) FindAll() []models.User {
 func (u *UserRepositoryImpl) FindByID(userId int) (models.User, error) {
 	var users models.User
 	result := u.Db.Where("id = ?", userId).First(&users)
-	helper.ErrorPanic(result.Error)
 	if result != nil {
 		return users, nil
 	} else {

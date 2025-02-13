@@ -1,11 +1,11 @@
 package request
 
 type CreateUserRequest struct {
-	UserName string `validate:"required,min=2,max=100" json:"username"`
-	FullName string `validate:"required,min=2,max=100" json:"fullname"`
-	Email    string `validate:"required,min=2,max=100" json:"email"`
-	Password string `validate:"required,min=2,max=100" json:"password"`
-	Role     string `validate:"required,min=2,max=100" json:"role"`
+	UserName string   `validate:"required,min=2,max=100" json:"username"`
+	FullName string   `validate:"required,min=2,max=100" json:"fullname"`
+	Email    string   `validate:"required,min=2,max=100" json:"email"`
+	Password string   `validate:"required,min=2,max=100" json:"password"`
+	Roles    []string `validate:"required,dive,min=2,max=50" json:"roles"`
 }
 type UpdateUserRequest struct {
 	Id       uint   `validate:"required"`

@@ -8,22 +8,26 @@ import (
 	"vietanh/gin-gorm-rest/helper"
 	"vietanh/gin-gorm-rest/models"
 	"vietanh/gin-gorm-rest/repository"
+
 	"vietanh/gin-gorm-rest/utils"
 
 	"errors"
 
 	"github.com/go-playground/validator/v10"
+	"gorm.io/gorm"
 )
 
 type AuthenticationServiceImpl struct {
 	UserRepository repository.UserRepository
 	Validate       *validator.Validate
+	RoleService    RoleService
 }
 
 func NewAuthenticationServiceImpl(userRepository repository.UserRepository, validate *validator.Validate) AuthenticationService {
 	return &AuthenticationServiceImpl{
 		UserRepository: userRepository,
 		Validate:       validate,
+		RoleService:    NewRoleService(repository.NewRoleRepositoryimpl(config.DB)),
 	}
 }
 
@@ -74,13 +78,13 @@ func (a *AuthenticationServiceImpl) Logout(ctx context.Context, refreshToken str
 // Register implements AuthenticationService.
 func (a *AuthenticationServiceImpl) Register(users request.CreateUserRequest) error {
 	// Kiểm tra xem username đã tồn tại chưa
-	user, user_err := a.UserRepository.FindByUserName(users.UserName)
-	if user_err != nil {
-		return user_err // Nếu có lỗi khi tìm kiếm user, trả về lỗi đó
+	user, userErr := a.UserRepository.FindByUserName(users.UserName)
+	if userErr != nil && !errors.Is(userErr, gorm.ErrRecordNotFound) {
+		return userErr
 	}
 	if user != nil {
 		// Nếu user đã tồn tại trong cơ sở dữ liệu
-		return errors.New("Username already exists")
+		return errors.New("username already exists")
 	}
 
 	// Hash mật khẩu
@@ -89,13 +93,30 @@ func (a *AuthenticationServiceImpl) Register(users request.CreateUserRequest) er
 		return err // Nếu có lỗi khi hash mật khẩu, trả về lỗi
 	}
 
+	// Xử lý Role (tạo nếu chưa có)
+	var roles []models.Role
+	for _, roleName := range users.Roles {
+		role, err := a.RoleService.CheckRoleExist(roleName)
+		if err != nil {
+			return err
+		}
+		if role == nil { // Nếu Role chưa tồn tại, tạo mới
+			role = &models.Role{Name: roleName}
+			err = a.RoleService.CreateRole(*role)
+			if err != nil {
+				return err
+			}
+		}
+		roles = append(roles, *role)
+	}
+
 	// Tạo user mới
 	newUser := models.User{
 		UserName: users.UserName,
 		Password: hashedPassword,
 		Email:    users.Email,
 		FullName: users.FullName,
-		Role:     users.Role,
+		Roles:    roles,
 	}
 
 	// Lưu user vào database

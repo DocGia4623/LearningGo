@@ -35,19 +35,19 @@ func AuthorizeRole(userRepo repository.UserRepository, allowedRoles ...string) g
 		}
 		id, err_id := strconv.Atoi(fmt.Sprint(sub))
 		helper.ErrorPanic(err_id)
-		currentUser, err := userRepo.FindByID(id)
+		_, err = userRepo.FindByID(id)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": "User not found"})
 			return
 		}
 
-		// Kiểm tra quyền
-		for _, role := range allowedRoles {
-			if currentUser.Role == role {
-				ctx.Next()
-				return
-			}
-		}
+		// // Kiểm tra quyền
+		// for _, role := range allowedRoles {
+		// 	if currentUser.Role == role {
+		// 		ctx.Next()
+		// 		return
+		// 	}
+		// }
 
 		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": "Permission denied"})
 	}

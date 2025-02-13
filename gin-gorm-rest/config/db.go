@@ -39,6 +39,10 @@ func Connect(config *Config) *gorm.DB {
 		&models.User{},
 		&models.Device{},
 		&models.RefreshToken{},
+		&models.Role{},
+		&models.Permission{},
+		&models.UserRole{},
+		&models.RolePermission{},
 		// Add other models here
 	}
 
