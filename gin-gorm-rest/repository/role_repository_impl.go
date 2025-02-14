@@ -44,3 +44,24 @@ func (r *RoleRepositoryimpl) CheckRoleExist(role string) (*models.Role, error) {
 	}
 	return &roles, nil
 }
+
+func (r *RoleRepositoryimpl) CheckRolePermission(roleID, permissionID uint) (*models.RolePermission, error) {
+	var rolePermission models.RolePermission
+	err := r.Db.Where("role_id = ? AND permission_id =?", roleID, permissionID).First(&rolePermission).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &rolePermission, nil
+}
+func (r *RoleRepositoryimpl) CreateRolePermission(roleID, permissionID uint) error {
+	rolePermission := models.RolePermission{
+		RoleID:       roleID,
+		PermissionID: permissionID,
+	}
+	result := r.Db.Create(&rolePermission)
+	helper.ErrorPanic(result.Error)
+	return result.Error
+}

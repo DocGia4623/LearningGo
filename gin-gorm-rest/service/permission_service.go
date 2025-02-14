@@ -7,4 +7,5 @@ type PermissionService interface {
 	CheckIfExist(permission string) (*models.Permission, error)
 	CreatePermission(permission models.Permission) error
 	DeletePermission(permission string)
+	CreatePermissionWithRole(permission string, role []string) error
 }

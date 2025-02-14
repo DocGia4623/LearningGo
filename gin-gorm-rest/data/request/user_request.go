@@ -20,3 +20,8 @@ type LoginRequest struct {
 	UserName string `validate:"required,min=2,max=100" json:"username"`
 	Password string `validate:"required,min=2,max=100" json:"password"`
 }
+
+type PermissionRoleRequest struct {
+	Name  string   `json:"name" validate:"required,min=2,max=100"`
+	Roles []string `json:"role" validate:"required,dive,min=2,max=50"`
+}

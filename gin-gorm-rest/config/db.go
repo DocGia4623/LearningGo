@@ -68,7 +68,6 @@ func ConnectRedis(config *Config) *redis.Client {
 	if err != nil {
 		log.Fatalf("Failed to connect to Redis: %v", err)
 	}
-
 	RedisClient = client
 	return client
 }

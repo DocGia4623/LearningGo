@@ -13,5 +13,6 @@ func PermissionRoute(PermissionController controller.PermissionController, Route
 		permission.POST("/", PermissionController.CreatePermission)
 		permission.POST("/check", PermissionController.CheckIfExist)
 		permission.DELETE("/:id", PermissionController.DeletePermission)
+		permission.POST("/role", PermissionController.CreatePermissionWithRole)
 	}
 }

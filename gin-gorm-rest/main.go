@@ -8,6 +8,7 @@ import (
 	"vietanh/gin-gorm-rest/controller"
 	"vietanh/gin-gorm-rest/repository"
 	"vietanh/gin-gorm-rest/routes"
+	"vietanh/gin-gorm-rest/service"
 
 	"github.com/gin-gonic/gin"
 	gindump "github.com/tpkeeper/gin-dump"
@@ -56,17 +57,22 @@ func main() {
 
 	//Init Repository
 	userRepository := repository.NewUserRepositoryImpl(config.DB)
-
+	permissionRepository := repository.NewPermissionRepositoryImpl(config.DB)
+	roleRepository := repository.NewRoleRepositoryimpl(config.DB)
+	//Init Service
+	permissionService := service.NewPermissionServiceImpl(permissionRepository, roleRepository)
 	//Init Service
 	// authenticationService := service.NewAuthenticationServiceImpl(userRepository, validate)
 
 	// //Init controller
 	// authenticationController := controller.NewAuthenticationController(authenticationService)
 	usersController := controller.NewUserController(userRepository)
+	permissionController := controller.NewPermissionController(permissionService)
 
 	routes.UserRoute(userRepository, *usersController, router)
 	routes.DeviceRoute(router)
 	routes.AuthRoute(router)
+	routes.PermissionRoute(permissionController, router)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.Run(":8080")

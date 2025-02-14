@@ -2,6 +2,8 @@ package controller
 
 import (
 	"net/http"
+	"vietanh/gin-gorm-rest/data/request"
+	"vietanh/gin-gorm-rest/data/response"
 	"vietanh/gin-gorm-rest/models"
 	"vietanh/gin-gorm-rest/service"
 
@@ -35,4 +37,26 @@ func (controller *PermissionController) CheckIfExist(c *gin.Context) {
 	permission := c.Param("permission")
 	result, _ := controller.PermissionService.CheckIfExist(permission)
 	c.JSON(http.StatusOK, result)
+}
+
+func (controller *PermissionController) CreatePermissionWithRole(c *gin.Context) {
+	var req request.PermissionRoleRequest
+	// Kiểm tra lỗi khi parse JSON
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body", "details": err.Error()})
+		return
+	}
+	// Gọi service để tạo permission với role
+	if err := controller.PermissionService.CreatePermissionWithRole(req.Name, req.Roles); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// Trả về response thành công
+	webResponse := response.Response{
+		Code:    http.StatusOK,
+		Status:  "ok",
+		Message: "Permission created successfully",
+		Data:    req,
+	}
+	c.JSON(http.StatusOK, webResponse)
 }
