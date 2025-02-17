@@ -9,4 +9,5 @@ type UserRepository interface {
 	FindByID(userId int) (models.User, error)
 	FindAll() []models.User
 	FindByUserName(userName string) (*models.User, error)
+	FindIfUserHasRole(uint, []models.Role) bool
 }

@@ -65,3 +65,15 @@ func (r *RoleRepositoryimpl) CreateRolePermission(roleID, permissionID uint) err
 	helper.ErrorPanic(result.Error)
 	return result.Error
 }
+
+func (r *RoleRepositoryimpl) FindBelongToPermission(permission string) ([]models.Role, error) {
+	var roles []models.Role
+	result := r.Db.Joins("JOIN role_permissions ON roles.id = role_permissions.role_id").
+		Joins("JOIN permissions ON permissions.id = role_permissions.permission_id").
+		Where("permissions.name = ?", permission).
+		Find(&roles)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return roles, nil
+}

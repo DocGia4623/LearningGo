@@ -6,4 +6,5 @@ type RoleService interface {
 	FindAll() []models.Role
 	CreateRole(role models.Role) error
 	CheckRoleExist(role string) (*models.Role, error)
+	FindBelongToPermission(permission string) ([]models.Role, error)
 }

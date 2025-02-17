@@ -35,7 +35,7 @@ func (controller *PermissionController) DeletePermission(c *gin.Context) {
 }
 func (controller *PermissionController) CheckIfExist(c *gin.Context) {
 	permission := c.Param("permission")
-	result, _ := controller.PermissionService.CheckIfExist(permission)
+	result, _ := controller.PermissionService.FindIfExist(permission)
 	c.JSON(http.StatusOK, result)
 }
 

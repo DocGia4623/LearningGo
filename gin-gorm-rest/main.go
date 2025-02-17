@@ -60,6 +60,7 @@ func main() {
 	permissionRepository := repository.NewPermissionRepositoryImpl(config.DB)
 	roleRepository := repository.NewRoleRepositoryimpl(config.DB)
 	//Init Service
+	roleService := service.NewRoleServiceImpl(roleRepository)
 	permissionService := service.NewPermissionServiceImpl(permissionRepository, roleRepository)
 	//Init Service
 	// authenticationService := service.NewAuthenticationServiceImpl(userRepository, validate)
@@ -69,7 +70,7 @@ func main() {
 	usersController := controller.NewUserController(userRepository)
 	permissionController := controller.NewPermissionController(permissionService)
 
-	routes.UserRoute(userRepository, *usersController, router)
+	routes.UserRoute(userRepository, permissionService, roleService, *usersController, router)
 	routes.DeviceRoute(router)
 	routes.AuthRoute(router)
 	routes.PermissionRoute(permissionController, router)

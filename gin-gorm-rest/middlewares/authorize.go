@@ -8,13 +8,14 @@ import (
 	"vietanh/gin-gorm-rest/config"
 	"vietanh/gin-gorm-rest/helper"
 	"vietanh/gin-gorm-rest/repository"
+	"vietanh/gin-gorm-rest/service"
 	"vietanh/gin-gorm-rest/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
 // AuthorizationMiddleware is a middleware to check if the user have role to access the resource
-func AuthorizeRole(userRepo repository.UserRepository, allowedRoles ...string) gin.HandlerFunc {
+func AuthorizeRole(userRepo repository.UserRepository, permissionService service.PermissionService, roleService service.RoleService, permission string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// Get token
 		var token string
@@ -41,13 +42,24 @@ func AuthorizeRole(userRepo repository.UserRepository, allowedRoles ...string) g
 			return
 		}
 
-		// // Kiểm tra quyền
-		// for _, role := range allowedRoles {
-		// 	if currentUser.Role == role {
-		// 		ctx.Next()
-		// 		return
-		// 	}
-		// }
+		permission, err := permissionService.FindIfExist(permission)
+		if err != nil || permission == nil {
+			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": "Permission not found"})
+			return
+		}
+
+		roles, err := roleService.FindBelongToPermission(permission.Name)
+		if err != nil || len(roles) == 0 {
+			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": "Role not found"})
+			return
+		}
+		idUser := uint(id)
+		// Check if user has role
+		check := userRepo.FindIfUserHasRole(idUser, roles)
+		if check == true {
+			ctx.Next()
+			return
+		}
 
 		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": "Permission denied"})
 	}

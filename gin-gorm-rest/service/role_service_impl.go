@@ -9,7 +9,7 @@ type RoleServiceImpl struct {
 	RoleRepository repository.RoleRepository
 }
 
-func NewRoleService(roleRepository repository.RoleRepository) RoleService {
+func NewRoleServiceImpl(roleRepository repository.RoleRepository) RoleService {
 	return &RoleServiceImpl{RoleRepository: roleRepository}
 }
 
@@ -27,4 +27,8 @@ func (service *RoleServiceImpl) CheckRoleExist(role string) (*models.Role, error
 		return nil, err
 	}
 	return result, nil
+}
+
+func (service *RoleServiceImpl) FindBelongToPermission(permission string) ([]models.Role, error) {
+	return service.RoleRepository.FindBelongToPermission(permission)
 }

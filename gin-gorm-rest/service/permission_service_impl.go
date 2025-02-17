@@ -23,7 +23,7 @@ func (a *PermissionServiceImpl) FindAll() []models.Permission {
 	return a.PermissionRepository.FindAll()
 }
 
-func (a *PermissionServiceImpl) CheckIfExist(permission string) (*models.Permission, error) {
+func (a *PermissionServiceImpl) FindIfExist(permission string) (*models.Permission, error) {
 	result, err := a.PermissionRepository.CheckIfExist(permission)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func (a *PermissionServiceImpl) CreatePermissionWithRole(permissionName string, 
 		if err != nil && err != gorm.ErrRecordNotFound {
 			return fmt.Errorf("lỗi khi tìm role: %v", err)
 		}
-		// Tìm hoặc tạo Role
+
 		if role == nil {
 			newRole := models.Role{Name: roleName}
 			if err := a.RoleRepository.CreateRole(newRole); err != nil {

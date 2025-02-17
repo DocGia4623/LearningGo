@@ -27,7 +27,7 @@ func NewAuthenticationServiceImpl(userRepository repository.UserRepository, vali
 	return &AuthenticationServiceImpl{
 		UserRepository: userRepository,
 		Validate:       validate,
-		RoleService:    NewRoleService(repository.NewRoleRepositoryimpl(config.DB)),
+		RoleService:    NewRoleServiceImpl(repository.NewRoleRepositoryimpl(config.DB)),
 	}
 }
 

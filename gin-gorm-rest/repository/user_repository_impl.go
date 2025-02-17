@@ -75,3 +75,26 @@ func (u *UserRepositoryImpl) Update(users models.User) {
 	result := u.Db.Model(&users).Updates(UpdateUsers)
 	helper.ErrorPanic(result.Error)
 }
+
+func (u *UserRepositoryImpl) FindIfUserHasRole(userID uint, roles []models.Role) bool {
+	var count int64
+
+	// Extract role names from the slice of roles
+	var roleNames []string
+	for _, role := range roles {
+		roleNames = append(roleNames, role.Name)
+	}
+
+	result := u.Db.Table("users").
+		Joins("JOIN user_roles ON users.id = user_roles.user_id").
+		Joins("JOIN roles ON user_roles.role_id = roles.id").
+		Where("users.id = ? AND roles.name IN ?", userID, roleNames).
+		Count(&count)
+
+	if result.Error != nil {
+		helper.ErrorPanic(result.Error)
+		return false
+	}
+
+	return count > 0
+}

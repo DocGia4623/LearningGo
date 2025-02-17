@@ -8,4 +8,5 @@ type RoleRepository interface {
 	CheckRoleExist(role string) (*models.Role, error)
 	CheckRolePermission(roleID, permissionID uint) (*models.RolePermission, error)
 	CreateRolePermission(roleID, permissionID uint) error
+	FindBelongToPermission(permission string) ([]models.Role, error)
 }
