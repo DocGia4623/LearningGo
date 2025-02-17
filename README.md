@@ -1,8 +1,8 @@
                     App crud cơ bản có phân quyền, jwt token. 
 
 B1. pull về
-
-B2. tạo file .env có nội dung:
+B2. cd vào gin-gorm-rest package
+B3. tạo file .env có nội dung:
 
 
 POSTGRES_USER=postgres
@@ -32,10 +32,10 @@ REDIS_PORT=6379
 REDIS_DB=0
 
 
-B3. chạy docker-compose up --build
+B4. chạy docker-compose up --build
 
 
-B4. mở web enter link: http://localhost:8081/swagger/index.html 
+B5. mở web enter link: http://localhost:8081/swagger/index.html 
 
 
 Các api trong link chạy localhost với port 8081
