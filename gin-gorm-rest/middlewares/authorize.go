@@ -49,14 +49,18 @@ func AuthorizeRole(userRepo repository.UserRepository, permissionService service
 		}
 
 		roles, err := roleService.FindBelongToPermission(permission.Name)
-		if err != nil || len(roles) == 0 {
-			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": "Role not found"})
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": "error find role"})
+			return
+		}
+		if len(roles) == 0 {
+			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": "empty role"})
 			return
 		}
 		idUser := uint(id)
 		// Check if user has role
 		check := userRepo.FindIfUserHasRole(idUser, roles)
-		if check == true {
+		if check {
 			ctx.Next()
 			return
 		}

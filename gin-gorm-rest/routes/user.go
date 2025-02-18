@@ -21,7 +21,7 @@ func UserRoute(userRepository repository.UserRepository, permissionService servi
 		// @Produce  json
 		// @Success 200 {array} models.User
 		// @Router /user/ [get]
-		userRoutes.GET("/", middlewares.AuthorizeRole(userRepository, permissionService, roleService, "get user"), userController.GetUsers)
+		userRoutes.GET("/", middlewares.AuthorizeRole(userRepository, permissionService, roleService, "read user"), userController.GetUsers)
 
 		// @Summary Create a user
 		// @Description Create a new user

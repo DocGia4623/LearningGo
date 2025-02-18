@@ -69,8 +69,10 @@ func (a *AuthenticationServiceImpl) Logout(ctx context.Context, refreshToken str
 	if err != nil {
 		return err
 	}
+
 	// Xóa refresh token khỏi database
-	RefreshTokenService := NewRefreshTokenServiceImpl(repository.NewRefreshTokenRepositoryImpl(config.DB))
+	RabbitMQService := NewRabbitMQServiceImpl(config.RabbitMQConn)
+	RefreshTokenService := NewRefreshTokenServiceImpl(repository.NewRefreshTokenRepositoryImpl(config.DB), RabbitMQService)
 	RefreshTokenService.DeleteToken(refreshToken)
 	return nil
 }

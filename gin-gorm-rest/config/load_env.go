@@ -27,6 +27,11 @@ type Config struct {
 	RedisHost string
 	RedisPort string
 	RedisDB   int
+
+	RabbitMQHost     string
+	RabbitMQPort     string
+	RabbitMqUser     string
+	RabbitMQPassword string
 }
 
 // LoadConfig tải các thông số cấu hình từ file .env vào struct Config
@@ -35,7 +40,7 @@ func LoadConfig() (Config, error) {
 	// Load .env file
 	err := godotenv.Load()
 	if err != nil {
-		return Config{}, fmt.Errorf("Error loading .env file: %v", err)
+		return Config{}, fmt.Errorf("error loading .env file: %v", err)
 	}
 
 	// Check for required environment variables
@@ -47,31 +52,31 @@ func LoadConfig() (Config, error) {
 	}
 	for _, env := range requiredEnvVars {
 		if os.Getenv(env) == "" {
-			return Config{}, fmt.Errorf("Environment variable %s is not set", env)
+			return Config{}, fmt.Errorf("environment variable %s is not set", env)
 		}
 	}
 
 	// Parse TOKEN_EXPIRATION (e.g., "60m", "2h", ...)
 	refreshTokenExpiration, err := time.ParseDuration(os.Getenv("REFRESH_TOKEN_EXPIRATION"))
 	if err != nil {
-		return Config{}, fmt.Errorf("Invalid format for REFRESH TOKEN_EXPIRATION: %v", err)
+		return Config{}, fmt.Errorf("invalid format for REFRESH TOKEN_EXPIRATION: %v", err)
 	}
 
 	accessTokenExpiration, err := time.ParseDuration(os.Getenv("ACCESS_TOKEN_EXPIRATION"))
 	if err != nil {
-		return Config{}, fmt.Errorf("Invalid format for ACCESS TOKEN_EXPIRATION: %v", err)
+		return Config{}, fmt.Errorf("invalid format for ACCESS TOKEN_EXPIRATION: %v", err)
 	}
 
 	// Parse TOKEN_MAXAGE
 	refreshTokenMaxAge, err := strconv.Atoi(os.Getenv("REFRESH_TOKEN_MAXAGE"))
 	if err != nil {
-		return Config{}, fmt.Errorf("Invalid value for REFRESH_TOKEN_MAXAGE: %v", err)
+		return Config{}, fmt.Errorf("invalid value for REFRESH_TOKEN_MAXAGE: %v", err)
 	}
 
 	// Parse REDIS_DB
 	redisDB, err := strconv.Atoi(os.Getenv("REDIS_DB"))
 	if err != nil {
-		return Config{}, fmt.Errorf("Invalid value for REDIS_DB: %v", err)
+		return Config{}, fmt.Errorf("invalid value for REDIS_DB: %v", err)
 	}
 
 	// Return configuration struct
@@ -89,5 +94,9 @@ func LoadConfig() (Config, error) {
 		RedisHost:             os.Getenv("REDIS_HOST"),
 		RedisPort:             os.Getenv("REDIS_PORT"),
 		RedisDB:               redisDB,
+		RabbitMQHost:          os.Getenv("RABBITMQ_HOST"),
+		RabbitMQPort:          os.Getenv("RABBITMQ_PORT"),
+		RabbitMqUser:          os.Getenv("RABBITMQ_USER"),
+		RabbitMQPassword:      os.Getenv("RABBITMQ_PASSWORD"),
 	}, nil
 }

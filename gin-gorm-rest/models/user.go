@@ -15,9 +15,9 @@ type User struct {
 
 type Role struct {
 	gorm.Model
-	ID         uint         `json:"ID"`
-	Name       string       `gorm:"unique;not null"`
-	Permission []Permission `gorm:"many2many:role_permissions"`
+	ID          uint         `json:"ID"`
+	Name        string       `gorm:"unique;not null"`
+	Permissions []Permission `gorm:"many2many:role_permissions" json:"permissions"`
 }
 
 type UserRole struct {

@@ -21,8 +21,10 @@ func AuthRoute(router *gin.Engine) {
 	refreshTokenRepo := repository.NewRefreshTokenRepositoryImpl(db)
 	validate := validator.New()
 
+	RabbitDb := config.ConnectRabbitMQ(&appConfig)
+	rabbitMQService := service.NewRabbitMQServiceImpl(RabbitDb)
 	authenticationService := service.NewAuthenticationServiceImpl(userRepo, validate)
-	refreshTokenService := service.NewRefreshTokenServiceImpl(refreshTokenRepo)
+	refreshTokenService := service.NewRefreshTokenServiceImpl(refreshTokenRepo, rabbitMQService)
 	authController := controller.NewAuthenticationController(authenticationService, refreshTokenService)
 	authRoutes := router.Group("/auth")
 	{

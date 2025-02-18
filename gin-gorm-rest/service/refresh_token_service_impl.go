@@ -10,17 +10,18 @@ import (
 
 type RefreshTokenServiceImpl struct {
 	RefreshTokenRepository repository.RefreshTokenRepository
+	RabbitMQService        RabbitMQService
 }
 
-func NewRefreshTokenServiceImpl(refreshTokenRepository repository.RefreshTokenRepository) RefreshTokenService {
+func NewRefreshTokenServiceImpl(refreshTokenRepository repository.RefreshTokenRepository, rabbitMQService RabbitMQService) RefreshTokenService {
 	return &RefreshTokenServiceImpl{
 		RefreshTokenRepository: refreshTokenRepository,
+		RabbitMQService:        rabbitMQService,
 	}
 }
 
 func (a *RefreshTokenServiceImpl) RefreshToken(token string, signedKey string) (string, string, error) {
 	// Kiểm tra refresh token có trong database không
-
 	_, err := a.RefreshTokenRepository.FindByToken(token)
 	if err != nil {
 		return "", "", fmt.Errorf("refresh token is invalid")
@@ -59,6 +60,8 @@ func (a *RefreshTokenServiceImpl) RefreshToken(token string, signedKey string) (
 		Token: newRefreshToken,
 	})
 
+	// Gửi sự kiện vào RabbitMQ (refresh token đã được tạo mới)
+	go a.RabbitMQService.SendEvent("refresh_token_events", fmt.Sprintf(`{"token": "%s", "subject": "%s"}`, newRefreshToken, sub))
 	return accessToken, newRefreshToken, nil
 }
 

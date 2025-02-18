@@ -6,15 +6,17 @@ import (
 	"log"
 	"vietanh/gin-gorm-rest/models"
 
+	"github.com/rabbitmq/amqp091-go"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var (
-	DB          *gorm.DB
-	RedisClient *redis.Client
-	AppConfig   Config
+	DB           *gorm.DB
+	RedisClient  *redis.Client
+	RabbitMQConn *amqp091.Connection
+	AppConfig    Config
 )
 
 func Connect(config *Config) *gorm.DB {
@@ -51,6 +53,19 @@ func Connect(config *Config) *gorm.DB {
 	}
 	DB = db
 	return db
+}
+
+// ConnectRabbitMQ thiết lập kết nối RabbitMQ
+func ConnectRabbitMQ(config *Config) *amqp091.Connection {
+	// Chuỗi kết nối RabbitMQ
+	RabbitMQConnStr := fmt.Sprintf("amqp://%s:%s@%s:%s/", config.RabbitMqUser, config.RabbitMQPassword, config.RabbitMQHost, config.RabbitMQPort)
+	// Kết nối RabbitMQ
+	conn, err := amqp091.Dial(RabbitMQConnStr)
+	if err != nil {
+		log.Fatalf("Failed to connect rabbitMQ: %v", err)
+	}
+	RabbitMQConn = conn
+	return conn
 }
 
 // ConnectRedis thiết lập kết nối Redis

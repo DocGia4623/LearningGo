@@ -68,6 +68,7 @@ func (r *RoleRepositoryimpl) CreateRolePermission(roleID, permissionID uint) err
 
 func (r *RoleRepositoryimpl) FindBelongToPermission(permission string) ([]models.Role, error) {
 	var roles []models.Role
+	r.Db = r.Db.Debug() // Bật chế độ Debug để xem câu truy vấn SQL
 	result := r.Db.Joins("JOIN role_permissions ON roles.id = role_permissions.role_id").
 		Joins("JOIN permissions ON permissions.id = role_permissions.permission_id").
 		Where("permissions.name = ?", permission).

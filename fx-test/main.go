@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/sirupsen/logrus"
 	"go.uber.org/fx"
 )
 
@@ -11,29 +12,34 @@ func main() {
 	// p := NewPublisher(&t)
 	// m := NewMainService(p)
 	// m.Run()
-	fx.New(
-		fx.Provide(NewMainService),
-		fx.Provide(
-			fx.Annotate(
-				NewPublisher,
-				fx.As(new(IPublisher)),
-				fx.ParamTags(`group:"titles"`),
-			),
-		),
-		fx.Provide(
-			titleComponent("goobye"),
-		),
+	// fx.New(
+	// 	fx.Provide(NewMainService),
+	// 	fx.Provide(
+	// 		fx.Annotate(
+	// 			NewPublisher,
+	// 			fx.As(new(IPublisher)),
+	// 			fx.ParamTags(`group:"titles"`),
+	// 		),
+	// 	),
+	// 	fx.Provide(
+	// 		titleComponent("goobye"),
+	// 	),
 
-		fx.Provide(
-			titleComponent("hello"),
-		),
-		fx.Provide(
-			titleComponent("world"),
-		),
-		fx.Invoke(func(service *MainService) {
-			service.Run()
-		}),
-	).Run()
+	// 	fx.Provide(
+	// 		titleComponent("hello"),
+	// 	),
+	// 	fx.Provide(
+	// 		titleComponent("world"),
+	// 	),
+	// 	fx.Invoke(func(service *MainService) {
+	// 		service.Run()
+	// 	}),
+	// ).Run()
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	// Log với các level khác nhau
+	logrus.Info("This is an info message")
+	logrus.Warn("This is a warning")
+	logrus.Error("This is an error message")
 
 }
 
