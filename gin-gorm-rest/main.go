@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"io"
 	"log"
 	"os"
@@ -64,7 +65,10 @@ func main() {
 	permissionService := service.NewPermissionServiceImpl(permissionRepository, roleRepository)
 	//Init Service
 	// authenticationService := service.NewAuthenticationServiceImpl(userRepository, validate)
+	rabbitMQService := service.NewRabbitMQServiceImpl(config.RabbitMQConn)
 
+	// 🟢 Khởi chạy consumer trong goroutine
+	go StartConsumers(rabbitMQService)
 	// //Init controller
 	// authenticationController := controller.NewAuthenticationController(authenticationService)
 	usersController := controller.NewUserController(userRepository)
@@ -77,4 +81,20 @@ func main() {
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.Run(":8080")
+}
+
+func StartConsumers(rabbitMQService service.RabbitMQService) {
+	// Consumer cho refresh_token_events
+	go rabbitMQService.ConsumeEvent("refresh_token_events", func(message string) {
+		var event struct {
+			Token   string `json:"token"`
+			Subject string `json"subject"`
+		}
+		if err := json.Unmarshal([]byte(message), &event); err != nil {
+			log.Printf("❌ Failed to parse refresh token event: %v", err)
+			return
+		}
+		log.Printf("✅ Refresh Token Processed: %s for Subject: %s", event.Token, event.Subject)
+	})
+	log.Println("🔄 All RabbitMQ Consumers Started.")
 }

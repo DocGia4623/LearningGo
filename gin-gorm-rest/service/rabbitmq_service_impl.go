@@ -63,40 +63,52 @@ func (r *RabbitMQServiceImpl) ConsumeEvent(queueName string, handler func(string
 		return fmt.Errorf("failed to open channel: %w", err)
 	}
 
-	// Khai báo hàng đợi để đảm bảo nó tồn tại
+	// Khai báo hàng đợi (chỉ cần tạo ở phía consumer)
 	_, err = ch.QueueDeclare(
 		queueName,
-		true,
-		false,
-		false,
-		false,
+		true,  // Durable (bền vững)
+		false, // Không tự động xóa khi không có consumer
+		false, // Không exclusive (cho phép nhiều consumer)
+		false, // Không cần tạo hàng đợi bền vững
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to declared queue: %w", err)
+		return fmt.Errorf("failed to declare queue: %w", err)
 	}
 
-	// đăng ký consumer để nhận tin nhắn
+	// Đăng ký consumer
 	msgs, err := ch.Consume(
 		queueName,
 		"",
-		true,
-		false,
-		false,
+		true,  // Auto-ack (nếu cần kiểm soát ACK, nên để false)
+		false, // Không độc quyền (exclusive)
+		false, // Không cần requeue nếu consumer bị mất
 		false,
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to register consumer : %w", err)
+		return fmt.Errorf("failed to register consumer: %w", err)
 	}
 
-	// lắng nghe tin nhắn và xử lý
-
+	// Lắng nghe tin nhắn
 	go func() {
 		for msg := range msgs {
-			log.Printf("Recieved message : %s", msg.Body)
-			handler(string(msg.Body))
+			log.Printf("📨 Received message: %s", msg.Body)
+			if err := handleMessage(handler, string(msg.Body)); err != nil {
+				log.Printf("⚠️ Error handling message: %v", err)
+			}
 		}
 	}()
+	return nil
+}
+
+// Xử lý lỗi khi gọi handler
+func handleMessage(handler func(string), message string) error {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("❌ Panic recovered in handler: %v", r)
+		}
+	}()
+	handler(message)
 	return nil
 }

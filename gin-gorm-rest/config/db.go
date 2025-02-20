@@ -91,4 +91,5 @@ func ConnectRedis(config *Config) *redis.Client {
 func InitConfig(config *Config) {
 	Connect(config)
 	ConnectRedis(config)
+	ConnectRabbitMQ(config)
 }
