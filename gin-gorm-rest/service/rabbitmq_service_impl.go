@@ -18,35 +18,35 @@ func NewRabbitMQServiceImpl(rabbitMQConn *amqp091.Connection) RabbitMQService {
 	}
 }
 
-func (r *RabbitMQServiceImpl) SendEvent(queueName string, message string) error {
+func (r *RabbitMQServiceImpl) SendEvent(RoutingKey string, ExchangeName string, ExchangeType string, message string) error {
 	ch, err := r.RabbitMQConn.Channel()
 	if err != nil {
 		return err
 	}
 	defer ch.Close()
 
-	// declare queue
-
-	_, err = ch.QueueDeclare(
-		queueName, // Tên hàng đợi
-		true,      // Bảo vệ không bị mất nếu RabbitMQ restart
-		false,     // Không tự động xóa khi không còn consumer
-		false,     // Không chia sẻ với các consumer khác
-		false,     // Không tạo hàng đợi bền vững
-		nil,
+	// declare Exchange
+	err = ch.ExchangeDeclare(
+		ExchangeName, // Tên Exchange
+		ExchangeType, // Loại Exchange (direct, topic, fanout, headers)
+		true,         // Durable (bền vững, không mất khi restart)
+		false,        // Auto-delete (không tự động xoá khi không có queue nào sử dụng)
+		false,        // Internal
+		false,        // No-wait
+		nil,          // Arguments
 	)
 	if err != nil {
-		return fmt.Errorf("failed to declared a queue: %w", err)
+		return fmt.Errorf("failed to declared a exchange: %w", err)
 	}
 
-	// send
+	// Gửi message đến Exchange thay vì trực tiếp đến Queue
 	err = ch.Publish(
-		"",
-		queueName, // Tên hàng đợi
-		false,     // Không yêu cầu acknowledgement
-		false,     // Không yêu cầu routing key
+		ExchangeName, // Gửi đến Exchange
+		RoutingKey,   // Routing Key để xác định Queue
+		false,
+		false,
 		amqp091.Publishing{
-			ContentType: "application.json",
+			ContentType: "application/json",
 			Body:        []byte(message),
 		},
 	)
@@ -57,40 +57,66 @@ func (r *RabbitMQServiceImpl) SendEvent(queueName string, message string) error 
 	return nil
 }
 
-func (r *RabbitMQServiceImpl) ConsumeEvent(queueName string, handler func(string)) error {
+func (r *RabbitMQServiceImpl) ConsumeEvent(exchangeName, exchangeType, routingKey, queueName string, handler func(string)) error {
 	ch, err := r.RabbitMQConn.Channel()
 	if err != nil {
 		return fmt.Errorf("failed to open channel: %w", err)
 	}
 
-	// Khai báo hàng đợi (chỉ cần tạo ở phía consumer)
-	_, err = ch.QueueDeclare(
-		queueName,
-		true,  // Durable (bền vững)
-		false, // Không tự động xóa khi không có consumer
-		false, // Không exclusive (cho phép nhiều consumer)
-		false, // Không cần tạo hàng đợi bền vững
-		nil,
+	// Declare the exchange
+	err = ch.ExchangeDeclare(
+		exchangeName, // Exchange name
+		exchangeType, // Exchange type (direct, topic, fanout, headers)
+		true,         // Durable (persistent across restarts)
+		false,        // Auto-delete when no queues are bound
+		false,        // Internal
+		false,        // No-wait
+		nil,          // Arguments
+	)
+	if err != nil {
+		return fmt.Errorf("failed to declare exchange: %w", err)
+	}
+
+	// Declare the queue (it will be bound to the exchange)
+	q, err := ch.QueueDeclare(
+		queueName, // Queue name
+		true,      // Durable
+		false,     // Delete when unused
+		false,     // Exclusive
+		false,     // No-wait
+		nil,       // Arguments
 	)
 	if err != nil {
 		return fmt.Errorf("failed to declare queue: %w", err)
 	}
 
-	// Đăng ký consumer
+	// Bind queue to exchange with routing key
+	err = ch.QueueBind(
+		q.Name,       // Queue name
+		routingKey,   // Routing key
+		exchangeName, // Exchange name
+		false,        // No-wait
+		nil,          // Arguments
+	)
+	if err != nil {
+		return fmt.Errorf("failed to bind queue: %w", err)
+	}
+
+	// Register consumer
 	msgs, err := ch.Consume(
-		queueName,
-		"",
-		true,  // Auto-ack (nếu cần kiểm soát ACK, nên để false)
-		false, // Không độc quyền (exclusive)
-		false, // Không cần requeue nếu consumer bị mất
-		false,
-		nil,
+		q.Name, // Queue name
+		"",     // Consumer name (empty for auto-generated)
+		false,  // Auto-ack (set to false if manual acknowledgment is needed)
+		false,  // Exclusive
+		false,  // No-local
+		false,  // No-wait
+		nil,    // Arguments
 	)
 	if err != nil {
 		return fmt.Errorf("failed to register consumer: %w", err)
 	}
 
-	// Lắng nghe tin nhắn
+	// Process messages
 	go func() {
 		for msg := range msgs {
 			log.Printf("📨 Received message: %s", msg.Body)

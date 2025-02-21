@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"vietanh/gin-gorm-rest/config"
+	"vietanh/gin-gorm-rest/constant"
 	"vietanh/gin-gorm-rest/controller"
 	"vietanh/gin-gorm-rest/repository"
 	"vietanh/gin-gorm-rest/routes"
@@ -85,10 +86,10 @@ func main() {
 
 func StartConsumers(rabbitMQService service.RabbitMQService) {
 	// Consumer cho refresh_token_events
-	go rabbitMQService.ConsumeEvent("refresh_token_events", func(message string) {
+	go rabbitMQService.ConsumeEvent("refresh_token_events", "direct", constant.TokenRefreshedKey, "refresh queue", func(message string) {
 		var event struct {
 			Token   string `json:"token"`
-			Subject string `json"subject"`
+			Subject string `json:"subject"`
 		}
 		if err := json.Unmarshal([]byte(message), &event); err != nil {
 			log.Printf("❌ Failed to parse refresh token event: %v", err)

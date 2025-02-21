@@ -2,42 +2,30 @@ package main
 
 import (
 	"fmt"
-	"net/http"
+	"math/rand"
 	"os"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-	"go.elastic.co/ecslogrus"
+	"go.uber.org/zap"
 )
 
 func main() {
-
-	//add log
-	log.SetFormatter(&ecslogrus.Formatter{})
-	log.SetLevel(log.TraceLevel)
-
-	logfilePath := "/logs/out.log"
-	file, err := os.OpenFile(logfilePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err == nil {
-		log.SetOutput(file)
+	logPath := "./logs/go.log"
+	os.OpenFile(logPath, os.O_RDONLY|os.O_CREATE, 0666)
+	c := zap.NewProductionConfig()
+	c.OutputPaths = []string{"stdout", "./logs/go.log"}
+	l, err := c.Build()
+	if err != nil {
+		panic(err)
 	}
-	defer file.Close()
-	fmt.Print("Start device")
-	log.Info("Start Service")
-
-	server := &http.Server{
-		Addr: ":8080",
-		//handle routes
-		ReadTimeout:   10 * time.Second,
-		WriteTimeout:  10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
+	i := 0
+	for {
+		i++
+		time.Sleep(time.Second * 3)
+		if rand.Intn(10) == 1 {
+			l.Error("test error", zap.Error(fmt.Errorf("error because test: %d", i)))
+		} else {
+			l.Info(fmt.Sprintf("test log: %d", i))
+		}
 	}
-
-	server_err := server.ListenAndServe()
-	if server_err != nil {
-		panic(server_err)
-	}
-	
 }
-
-

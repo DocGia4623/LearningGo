@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"vietanh/gin-gorm-rest/config"
+	"vietanh/gin-gorm-rest/constant"
 	"vietanh/gin-gorm-rest/models"
 	"vietanh/gin-gorm-rest/repository"
 	"vietanh/gin-gorm-rest/utils"
@@ -61,7 +62,7 @@ func (a *RefreshTokenServiceImpl) RefreshToken(token string, signedKey string) (
 	})
 
 	// Gửi sự kiện vào RabbitMQ (refresh token đã được tạo mới)
-	go a.RabbitMQService.SendEvent("refresh_token_events", fmt.Sprintf(`{"token": "%s", "subject": "%s"}`, newRefreshToken, sub))
+	go a.RabbitMQService.SendEvent(constant.TokenRefreshedKey, "refresh_token_events", "direct", fmt.Sprintf(`{"token": "%s", "subject": "%s"}`, newRefreshToken, sub))
 	return accessToken, newRefreshToken, nil
 }
 
